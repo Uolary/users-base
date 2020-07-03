@@ -1,12 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     function GetUsers() {
         fetch('/api/users')
-            .then((data) => {
-                console.log(data)
-                data.json();
+            .then((res) => {
+                return res.json();
             })
             .then((users) => {
-                console.log(users)
+                for (let user of users) {
+                    console.log(user)
+                }
             })
             .catch((error) => {
                 console.log(error)
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 age: userAge
             })
         }).then((user) => {
-            document.querySelector('table tbody').insertAdjacentHTML('beforeend', row(user));
+            console.log('create')
         })
     };
 
