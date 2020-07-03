@@ -33,6 +33,8 @@ app.get('/api/users', function(req, res) {
         if (err) {
             return console.log(err);
         };
+        
+        console.log(users)
 
         res.send(users);
     });
