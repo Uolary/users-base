@@ -77,8 +77,6 @@ app.delete('/api/users/:id', function(req, res) {
     const id = new objectId(req.params.id);
     const collection = req.app.locals.collection;
 
-    console.log(id)
-
     collection.findOneAndDelete({_id: id}, function(err, result) {
         if (err) {
             return console.log(err);
