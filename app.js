@@ -33,8 +33,6 @@ app.get('/api/users', function(req, res) {
         if (err) {
             return console.log(err);
         };
-        
-        console.log(users)
 
         res.send(users);
     });
@@ -79,12 +77,15 @@ app.delete('/api/users/:id', function(req, res) {
     const id = new objectId(req.params.id);
     const collection = req.app.locals.collection;
 
+    console.log(id)
+
     collection.findOneAndDelete({_id: id}, function(err, result) {
         if (err) {
             return console.log(err);
         };
 
         let user = result.value;
+
         res.send(user);
     });
 });
