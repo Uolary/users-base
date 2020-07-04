@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function CreateUser(userName, aserAge) {
-        fetch('api/users', {
+        fetch('/api/users', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

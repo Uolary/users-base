@@ -1,124 +1,86 @@
+const mongoose = require('mongoose');
 const express = require('express');
-const MongoClient = require('mongodb').MongoClient;
-const objectId = require('mongodb').ObjectID;
-const url = 'mongodb://localhost:27017/';
+const Schema = mongoose.Schema;
 
 const app = express();
 const jsonParser = express.json();
 
-const mongoCLient = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+const userScheme = new Schema({
+    name: {
+        type: String,
+        default: 'No name'
+    },
+    age: Number
+}, {versionKey: false});
 
-let dbClient;
+const User = mongoose.model('User', userScheme);
 
 app.use(express.static(__dirname + '/public'));
 
-mongoCLient.connect(function(err, client) {
-    if (err) {
-        return console.log(err);
-    };
+mongoose.connect('mongodb://localhost:27017/usersdb', {useNewUrlParser: true, useUnifiedTopology: true}, (err) => {
+    if (err) return console.log(err);
 
-    dbClient = client;
-
-    app.locals.collection = client.db('usersdb2').collection('users2');
-
-    app.listen(3001, function () {
-        console.log('Сервер ожидает подключение...');
+    app.listen(3001, () => {
+        console.log('Waiting for connection...');
     });
 });
 
-app.get('/api/users', function(req, res) {
-    const collection = req.app.locals.collection;
-
-    collection.find().toArray(function(err, users) {
-        if (err) {
-            return console.log(err);
-        };
+app.get('/api/users', (req, res) => {
+    User.find({}, (err, users) => {
+        if (err) return console.log(err);
 
         res.send(users);
     });
 });
 
-app.get('/api/users/:id', function(req, res) {
-    const id = new objectId(req.params.id);
-    const collection = req.app.locals.collection;
+app.get('/api/users/:id', (req, res) => {
+    let id = req.params.id;
 
-    collection.findOne({_id: id}, function(err, user) {
-        if (err) {
-            return console.log(err);
-        };
+    User.findOne({_id: id}, (err, user) => {
+        if (err) return console.log(err);
 
         res.send(user);
     });
 });
 
-app.post('/api/users', jsonParser, function (req, res) {
-    if (!req.body) {
-        return res.sendStatus(400);
-    };
+app.post('/api/users', jsonParser, (req, res) => {
+    if (!req.body) return res.sendStatus(400);
 
-    const userName = req.body.name;
-    const userAge = req.body.age;
-    const user = {
+    let userName = req.body.name;
+    let userAge = req.body.age;
+
+    User.create({name: userName, age: userAge}, (err, doc) => {
+        if (err) return console.log(err);
+
+        res.send(doc)
+    });
+});
+
+app.delete('/api/users/:id', (req, res) => {
+    let id = req.params.id;
+
+    User.findByIdAndDelete(id, (err, user) => {
+        if (err) return console.log(err);
+
+        res.send(user);
+    });
+});
+
+app.put('/api/users', jsonParser, (req, res) => {
+    if (!req.body) return console.log(err);
+
+    let id = req.body.id;
+    let userName = req.body.name;
+    let userAge = req.body.age;
+
+    let newUser = {
         name: userName,
         age: userAge
     };
 
-    const collection = req.app.locals.collection;
-    collection.insertOne(user, function(err, result) {
-        if (err) {
-            return console.log(err);
-        };
+    User.findByIdAndUpdate({_id: id}, newUser, {new: true}, (err, user) => {
+        if (err) return console.log(err);
 
         res.send(user);
     });
-});
-
-app.delete('/api/users/:id', function(req, res) {
-    const id = new objectId(req.params.id);
-    const collection = req.app.locals.collection;
-
-    collection.findOneAndDelete({_id: id}, function(err, result) {
-        if (err) {
-            return console.log(err);
-        };
-
-        let user = result.value;
-
-        res.send(user);
-    });
-});
-
-app.put('/api/users', jsonParser, function(req, res) {
-    if (!req.body) {
-        return res.sendStatus(400);
-    };
-
-    const id = new objectId(req.body.id);
-    const userName = req.body.name;
-    const userAge = req.body.age;
-
-    const collection = req.app.locals.collection;
-
-    collection.findOneAndUpdate(
-        {_id: id},
-        {$set: {
-            age: userAge,
-            name: userName
-        }},
-        {returnOriginal: false},
-        function(err, result) {
-            if (err) {
-                return console.log(err);
-            };
-
-            const user = result.value;
-
-            res.send(user);
-        }
-    );
-});
-
-process.on('SIGINT', () => {
-    dbClient.close();
-    process.exit();
 });
