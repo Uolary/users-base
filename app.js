@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const express = require('express');
 const Schema = mongoose.Schema;
 
+const PORT = process.env.PORT || 80;
+
 const app = express();
 const jsonParser = express.json();
 
@@ -20,7 +22,7 @@ app.use(express.static(__dirname + '/public'));
 mongoose.connect('mongodb://localhost:27017/usersdb', {useNewUrlParser: true, useUnifiedTopology: true}, (err) => {
     if (err) return console.log(err);
 
-    app.listen(3001, () => {
+    app.listen(PORT, () => {
         console.log('Waiting for connection...');
     });
 });
